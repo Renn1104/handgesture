@@ -188,7 +188,6 @@ class IntroductionDetector:
         pinky_base = hand_landmarks.landmark[18]
         
         index_tip = hand_landmarks.landmark[8]
-        index_base = hand_landmarks.landmark[6]
         middle_tip = hand_landmarks.landmark[12]
         middle_base = hand_landmarks.landmark[10]
         ring_tip = hand_landmarks.landmark[16]
@@ -197,7 +196,7 @@ class IntroductionDetector:
         thumb_out = thumb_tip.x < thumb_base.x or thumb_tip.x > thumb_base.x
         pinky_up = pinky_tip.y < pinky_base.y
         
-        index_down = index_tip.y > index_base.y
+        index_down = middle_base.y > middle_base.y
         middle_down = middle_tip.y > middle_base.y
         ring_down = ring_tip.y > ring_base.y
         
@@ -329,7 +328,6 @@ class IntroductionDetector:
                 self.current_detected_gesture = None
                 self.gesture_start_time = 0
                 self.display_gesture = None
-                self.audio_played = False
                 print("Reset!")
             elif key == ord('s') and gesture in self.phrases:
                 self.play_audio(gesture)
@@ -344,14 +342,13 @@ class IntroductionDetector:
             detected_text = self.phrases[self.display_gesture]
             text_size = cv2.getTextSize(detected_text, cv2.FONT_HERSHEY_SIMPLEX, 1.2, 3)[0]
             text_x = (width - text_size[0]) // 2
-            text_y = height - 50
             
             overlay = frame.copy()
-            cv2.rectangle(overlay, (text_x - 20, text_y - text_size[1] - 20), 
-                         (text_x + text_size[0] + 20, text_y + 10), (0, 0, 0), -1)
+            cv2.rectangle(overlay, (text_x - 20, text_x - text_size[1] - 20), 
+                         (text_x + text_size[0] + 20, text_x + 10), (0, 0, 0), -1)
             cv2.addWeighted(overlay, 0.7, frame, 0.3, 0, frame)
             
-            cv2.putText(frame, detected_text, (text_x, text_y), 
+            cv2.putText(frame, detected_text, (text_x, text_x), 
                        cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
 
 if __name__ == "__main__":
