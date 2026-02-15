@@ -40,7 +40,7 @@ class IntroductionDetector:
             "scissors": "rendy",
             "thumb_index": "nayogi",
             "metal": "pramudya",
-            "shaka": "terima kasih"
+            "thumbs_up": "terima kasih"
         }
         
         self.generate_audio_files()
@@ -181,26 +181,30 @@ class IntroductionDetector:
         
         return index_up and thumb_out and pinky_up and middle_down and ring_down
     
-    def is_shaka(self, hand_landmarks):
+    def is_thumbs_up(self, hand_landmarks):
         thumb_tip = hand_landmarks.landmark[4]
-        thumb_base = hand_landmarks.landmark[2]
-        pinky_tip = hand_landmarks.landmark[20]
-        pinky_base = hand_landmarks.landmark[18]
-        
+        thumb_ip = hand_landmarks.landmark[3]
+        thumb_mcp = hand_landmarks.landmark[2]
+
         index_tip = hand_landmarks.landmark[8]
+        index_pip = hand_landmarks.landmark[6]
         middle_tip = hand_landmarks.landmark[12]
-        middle_base = hand_landmarks.landmark[10]
+        middle_pip = hand_landmarks.landmark[10]
         ring_tip = hand_landmarks.landmark[16]
-        ring_base = hand_landmarks.landmark[14]
-        
-        thumb_out = thumb_tip.x < thumb_base.x or thumb_tip.x > thumb_base.x
-        pinky_up = pinky_tip.y < pinky_base.y
-        
-        index_down = middle_base.y > middle_base.y
-        middle_down = middle_tip.y > middle_base.y
-        ring_down = ring_tip.y > ring_base.y
-        
-        return thumb_out and pinky_up and index_down and middle_down and ring_down
+        ring_pip = hand_landmarks.landmark[14]
+        pinky_tip = hand_landmarks.landmark[20]
+        pinky_pip = hand_landmarks.landmark[18]
+
+        # jempol ke atas
+        thumb_up = thumb_tip.y < thumb_ip.y < thumb_mcp.y
+
+        # jari lain menekuk
+        index_down = index_tip.y > index_pip.y
+        middle_down = middle_tip.y > middle_pip.y
+        ring_down = ring_tip.y > ring_pip.y
+        pinky_down = pinky_tip.y > pinky_pip.y
+
+        return thumb_up and index_down and middle_down and ring_down and pinky_down
     
     def detect_gesture(self, frame):
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -239,8 +243,8 @@ class IntroductionDetector:
                 
                 if self.is_metal(hand_landmarks):
                     detected_gesture = "metal"
-                elif self.is_shaka(hand_landmarks):
-                    detected_gesture = "shaka"
+                elif self.is_thumbs_up(hand_landmarks):
+                    detected_gesture = "thumbs_up"
                 elif self.is_thumb_index(hand_landmarks):
                     detected_gesture = "thumb_index"
                 elif self.is_scissors(hand_landmarks):
@@ -306,7 +310,7 @@ class IntroductionDetector:
                             "scissors": "Scissors ✌",
                             "thumb_index": "Thumb + Index 👍",
                             "metal": "Metal 🤘",
-                            "shaka": "Shaka 🤙"
+                            "thumbs_up": "Thumbs Up 👍"
                         }
                         print(f"Detected: {gesture_names.get(gesture, gesture)} -> '{self.phrases[gesture]}'")
                         self.play_audio(gesture)
